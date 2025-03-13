@@ -16,7 +16,7 @@ type StreamConfig struct {
 
 func NewDefaultStreamConfig() *StreamConfig {
 	finalBufferSize := 8
-	finalTimeoutSeconds := 3
+	finalTimeoutSeconds := 10
 	finalMaxRetries := 5
 
 	maxRetries, ok := os.LookupEnv("MAX_RETRIES")

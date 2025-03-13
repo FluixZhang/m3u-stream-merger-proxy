@@ -58,6 +58,7 @@ func streamDownloadM3USources() chan *SourceDownloaderResult {
 						return
 					}
 
+					fmt.Println("M3UURL : " + m3uURL)
 					handleRemoteURL(m3uURL, idx, result)
 				}()
 
@@ -83,13 +84,7 @@ func handleLocalFile(localPath string, result *SourceDownloaderResult) {
 }
 
 func handleRemoteURL(m3uURL, idx string, result *SourceDownloaderResult) {
-	req, err := http.NewRequest("GET", m3uURL, nil)
-	if err != nil {
-		result.Error <- fmt.Errorf("error creating request: %v", err)
-		return
-	}
-
-	resp, err := utils.HTTPClient.Do(req)
+	resp, err := utils.CustomHttpRequest("GET", m3uURL)
 	if err != nil {
 		result.Error <- fmt.Errorf("HTTP GET error: %v", err)
 		return
@@ -98,11 +93,14 @@ func handleRemoteURL(m3uURL, idx string, result *SourceDownloaderResult) {
 
 	if resp.StatusCode != http.StatusOK {
 		result.Error <- fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+		fmt.Printf("Failed to Download , http code: %d\n", resp.StatusCode)
 		return
 	}
 
 	finalPath := utils.GetM3UFilePathByIndex(idx)
 	tmpPath := finalPath + ".new"
+
+	fmt.Printf("FinalPath : %s , tempPath %s \n", finalPath, tmpPath)
 
 	if err := os.MkdirAll(filepath.Dir(finalPath), os.ModePerm); err != nil {
 		result.Error <- fmt.Errorf("error creating directories: %v", err)

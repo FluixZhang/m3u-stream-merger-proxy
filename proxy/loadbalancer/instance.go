@@ -273,6 +273,7 @@ func (instance *LoadBalancerInstance) tryStreamUrls(
 			instance.markTested(streamId, id)
 			continue
 		}
+		req.Header.Set("User-Agent", utils.GetEnv("USER_AGENT"))
 
 		resp, err := instance.httpClient.Do(req)
 		if err != nil {

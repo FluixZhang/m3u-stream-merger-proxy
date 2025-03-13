@@ -66,6 +66,7 @@ func (c *StreamCoordinator) StartHLSWriter(ctx context.Context, lbResult *loadba
 		case <-ticker.C:
 			// Check timeout first
 			if time.Since(lastChangeTime) > time.Duration(c.config.TimeoutSeconds)*time.Second+pollInterval {
+				fmt.Printf("Last Change Time %s  , Limit = %s \n", lastChangeTime, time.Duration(c.config.TimeoutSeconds)*time.Second+pollInterval)
 				c.logger.Debug("No sequence changes detected within timeout period")
 				c.writeError(fmt.Errorf("stream timeout: no new segments"), proxy.StatusEOF)
 				return
@@ -128,9 +129,10 @@ func (c *StreamCoordinator) StartHLSWriter(ctx context.Context, lbResult *loadba
 				c.writeError(io.EOF, proxy.StatusEOF)
 				return
 			}
-
-			if metadata.MediaSequence > lastMediaSeq {
+			fmt.Printf("Media Seq : %d \n", metadata.MediaSequence)
+			if metadata.MediaSequence >= lastMediaSeq {
 				lastChangeTime = time.Now()
+
 				lastMediaSeq = metadata.MediaSequence
 
 				if err := c.processSegments(ctx, metadata.Segments); err != nil {
@@ -224,8 +226,7 @@ func (c *StreamCoordinator) parsePlaylist(mediaURL string, content string) (*Pla
 		case strings.HasPrefix(line, "#EXTM3U"):
 			continue
 		case strings.HasPrefix(line, "#EXT-X-STREAM-INF"):
-			metadata.IsMaster = true
-			return metadata, nil
+			continue
 		case strings.HasPrefix(line, "#EXT-X-VERSION:"):
 			_, _ = fmt.Sscanf(line, "#EXT-X-VERSION:%d", &metadata.Version)
 		case strings.HasPrefix(line, "#EXT-X-TARGETDURATION:"):

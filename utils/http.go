@@ -13,6 +13,8 @@ var HTTPClient = &http.Client{
 
 		// Follow redirects while preserving the custom User-Agent header
 		req.Header.Set("User-Agent", userAgent)
+		fmt.Printf("Redirect : %s , %s\n", req.URL, via[0].URL)
+
 		return nil
 	},
 }
